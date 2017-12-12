@@ -11,17 +11,15 @@ const router = new Router()
 
 router.get('/exchange-token', async (ctx) => {
   const { query } = ctx
-  console.log(query)
   const { data } = await axios.post('https://github.com/login/oauth/access_token', null, {
     params: query,
     headers: {Accept:' application/json'},
   })
-  console.log(data)
   ctx.body = data
 })
 
 
 
-app.use(cors()).use(router.routes()).use(router.allowedMethods()).use(errorMiddle)
+app.use(errorMiddle).use(cors()).use(router.routes()).use(router.allowedMethods())
 
 module.exports = app
