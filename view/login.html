@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>gh-talk-login</title>
+  <style>
+    body {
+      min-height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+    <svg width="100px"  height="100px"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-rolling" style="background: none;">
+      <circle cx="50" cy="50" fill="none" ng-attr-stroke="{{config.color}}" ng-attr-stroke-width="{{config.width}}" ng-attr-r="{{config.radius}}" ng-attr-stroke-dasharray="{{config.dasharray}}" stroke="#5699d2" stroke-width="3" r="40" stroke-dasharray="188.49555921538757 64.83185307179586" transform="rotate(197.297 50 50)">
+        <animateTransform attributeName="transform" type="rotate" calcMode="linear" values="0 50 50;360 50 50" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"></animateTransform>
+      </circle>
+      </svg>
+<script>
+  const parseQuery = () => {
+    const searchStr = location.search
+    const search = searchStr[0] === '?' ? searchStr.slice(1) : searchStr
+    return search.split('&').reduce((pre, cur) => {
+      const [k, v] = cur.split('=')
+      k&&v&&(pre[k] = v)
+      return pre
+      }, {})
+  }
+  const  formatQuery = (obj) => {
+    return Object.keys(obj).map(k => `${k}=${obj[k]}`).join('&')
+  }
+
+  const sendAuth = code => {
+    if (!window.opener) return
+    window.opener.postMessage({type: 'AUTH', code: code}, '*')
+  }
+
+  const sendError = e => {
+    if (!window.opener) return
+    window.opener.postMessage({type: 'FAIL', error: e})
+  }
+
+  const clientSecret = '620213cfd55e0d116eb701be229df980f4183a68'
+  const clientId = '734b918f798cd3a1cd88'
+  const init = () => {
+    const querys = parseQuery()
+    if (querys.code) {
+      fetch(`/exchange-token?${formatQuery({code: querys.code, client_id: clientId, client_secret: clientSecret})}`).then(res => res.json()).then(res => {
+        sendAuth(res.access_token)
+      }).catch((e) => {
+        sendError(e)
+      })
+    } else {
+      const redirect_uri = location.href
+      const AUTH_URL = 'https://github.com/login/oauth/authorize'
+      location.href = `${AUTH_URL}?scope=public_repo&client_id=${clientId}&redirect_uri=${redirect_uri}`
+    }
+  }
+  // main logic
+  if (!window.opener) {
+    document.body.innerHTML = `<div>hello world</div>`
+  } else {
+    init()
+  }
+</script>
+</body>
+</html>

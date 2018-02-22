@@ -3,6 +3,7 @@ const Koa = require('koa')
 const cors = require('@koa/cors')
 const Router = require('koa-router')
 const axios = require('axios')
+const fs = require('fs')
 
 const {errorMiddle} = require('./error')
 
@@ -16,6 +17,11 @@ router.get('/exchange-token', async (ctx) => {
     headers: {Accept:' application/json'},
   })
   ctx.body = data
+})
+
+router.get('/', async (ctx) => {
+  ctx.type = 'text/html'
+  ctx.body = fs.readFileSync('./view/login.html', 'binary')
 })
 
 
